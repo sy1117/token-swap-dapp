@@ -7,7 +7,8 @@ const Contract = new Schema({
     company: String,
     recruiter : String,
     address : String,
-    respondents : Array
+    respondents : Array,
+    comments:Schema.Types.Mixed
 });
 
 export default mongoose.model('contract', Contract);

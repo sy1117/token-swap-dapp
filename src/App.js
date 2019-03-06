@@ -70,11 +70,11 @@ class App extends Component {
                       size='large'
                     >
                       <Container>
-                        <MenuLink to="/" label="Home"/>
-                        <MenuLink to="/request" label="Requests"/>
-                        <MenuLink to="/myPage" label="MyPage"/>
+                        <MenuLink to="/" label="RefenceCheck"/>
+                        {/* <MenuLink to="/request" label="Requests"/>
+                        <MenuLink to="/myPage" label="MyPage"/> */}
                         <Menu.Item position='right'>
-                        </Menu.Item>
+                        </Menu.Item> 
                       </Container>
                     </Menu>         
                   </Segment>

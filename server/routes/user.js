@@ -28,7 +28,6 @@ router.post('/contract', (req, res) => {
         if (err) throw err;
         if(user){
             if(!user.contracts) user.contracts = [];
-            console.log(user.contracts);
             user.contracts.push(req.body.contract);
             user.save((err, updated)=>{
                 return res.status(200).json(updated);

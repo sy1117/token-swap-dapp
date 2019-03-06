@@ -14,21 +14,30 @@ router.post('/search',(req, res) => {
     });
 });
 router.post('/', (req, res) => {
-    console.log({
-        name : req.body.name,
-        company : req.body.company,
-        recruiter : req.body.recruiter,
-        address : req.body.address,
-        respondents : req.body.respondents
-    })
     let con = new Contract({
         name : req.body.name,
         company : req.body.company,
         recruiter : req.body.recruiter,
         address : req.body.address,
+        comments: req.body.comments,
         respondents : req.body.respondents
     });
     con.save((err,result)=>{
+        if(err) console.log(err);
+        return res.status(200).json(result);
+    });
+});
+
+router.put('/:address', (req, res) => {
+    Contract.findOneAndUpdate({address: req.params.address}, req.body, (err, result)=>{
+        if(err) console.log(err);
+        return res.status(200).json(result);
+    });
+});
+
+router.delete('/:address', (req, res) => {
+    Contract.findOneAndRemove({address: req.params.address}, (err, result)=>{
+        if(err) console.log(err);
         return res.status(200).json(result);
     });
 });

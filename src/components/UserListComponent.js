@@ -20,10 +20,13 @@ class UserList extends React.Component{
   
     data = data ? data:userSample;
     let listItems =  data.map(val=>(
-      <List.Item onClick={onClick} id={val.address}>
+      <List.Item 
+            style={{cursor: 'pointer'}} 
+            relaxed='very'
+            onClick={onClick} id={val.address}>
         <Image avatar src='https://react.semantic-ui.com/images/avatar/small/jenny.jpg' />
         <List.Content>
-          <List.Header>{val.name}</List.Header>
+          <List.Header as='a'>{val.name}</List.Header>
           {val.company}
         </List.Content>
       </List.Item>

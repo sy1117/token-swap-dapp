@@ -25,6 +25,7 @@ class Respondent extends React.Component {
 
     this.state = {
       modalOpen: false,
+      accounts : Users,
       web3 : web3,
       name : "",
       company:"",
@@ -32,8 +33,8 @@ class Respondent extends React.Component {
       respondentList : [],
       showExpireDate : true,
       deadline: 3,
-      minReward :10,
-      maxReward :30,
+      minReward :1,
+      maxReward :3,
       cost: 0,
       requests : [
         {
@@ -75,13 +76,12 @@ class Respondent extends React.Component {
     }).send({
         from: account,
         gas: 1500000,
-        value: web3.utils.toWei(this.state.cost+'','gwei')
+        value: web3.utils.toWei(this.state.cost+'','ether')
     })
     .then((newContractInstance) => {
       /**
        * contract 
        */
-      console.log(this.state.respondentList)
       fetch('/api/contract',{
         method :'POST',
         headers: {
@@ -94,10 +94,10 @@ class Respondent extends React.Component {
           address :newContractInstance.options.address,
           recruiter : account,
           respondents: that.state.respondentList,
+          comments: that.state.accounts.filter(val=>val.checked),
           maxReward : that.state.maxReward,
         })
       }).then(()=>{
-
         that.setState({ modalOpen: false })
         fetch(`/api/user/contract/${account}`,{
           method :'POST',
@@ -114,7 +114,6 @@ class Respondent extends React.Component {
           return response.json();
         })
         .then(function(data){
-          console.log("recruiter", data);
         });
 
         that.state.respondentList.map(val=>{
@@ -130,7 +129,6 @@ class Respondent extends React.Component {
             })
           })
           .then(function(data){
-            console.log("respondents", data);
           });
         })
       })
@@ -157,9 +155,11 @@ class Respondent extends React.Component {
     let respondentList = this.state.respondentList;
     let target = e.currentTarget.children[0];
     let value = target.value;
+
     !target.checked? respondentList.push(value): respondentList.splice(respondentList.indexOf(value), 1);
+    this.state.accounts[target.name].checked = !target.checked
+
     this.setState({
-      respondentList : respondentList,
       cost : this.state.maxReward * respondentList.length
     })
   }
@@ -170,7 +170,9 @@ class Respondent extends React.Component {
       <Form.Group name="respondents" key={idx}>
         <Checkbox label={'Account' + idx + ':' + val.name} 
                   onChange={this.selectRespondents}
+                  data = {val}
                   value={val.address}
+                  name={idx}
                   {... (accounts['0'] == val.address ? { disabled: true } : '')}/>
       </Form.Group>
     ));
@@ -222,7 +224,7 @@ class Respondent extends React.Component {
               <Input 
                     type="number" 
                     value={this.state.minReward} 
-                    label={{ basic: true, content: 'gwei' }} 
+                    label={{ basic: true, content: 'ether' }} 
                     name="minReward" labelPosition='right' placeholder='Minimum Reward (per Person)'
                     onChange={this.handleChange} disabled
                     /><br/>
@@ -244,7 +246,7 @@ class Respondent extends React.Component {
             </Form.Group>
             <Form.Group inline>
               <Header as='h2'>
-                결제 비용 : {this.state.cost} gwei
+                결제 비용 : {this.state.cost} ether
               </Header>
             </Form.Group>
             <Button type='submit'>Submit</Button>
@@ -255,14 +257,6 @@ class Respondent extends React.Component {
             </Modal.Content>
           </Modal>
     )
-  }
-
-  componentDidMount(){
-    const that = this;
-    // let accounts = await web3.eth.getAccounts();
-    // console.log(web3.eth.accounts.)
-    // console.log(this.state.web3.eth.accounts[0])
-
   }
 }
 export default Respondent;

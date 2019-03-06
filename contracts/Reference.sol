@@ -4,8 +4,8 @@ contract Reference {
     
     // Reference Request Info 
     address recruiter;              // Recruiter Address 
-    uint MIN_REWARD = 10;      // Minimum Price Of Reward(per Person)
-    uint MAX_REWARD = 100;      // Maximum Price OF Reward(per Person)
+    uint MIN_REWARD = 1;            // Minimum Price Of Reward(per Person)
+    uint MAX_REWARD = 100;          // Maximum Price OF Reward(per Person)
     uint minReward;                 // Recruiter can choose amount of reward
     uint maxReward;
     uint public creationTime = now; // Created Time
@@ -76,16 +76,19 @@ contract Reference {
         _;
     }
     
-    function setReward(uint[] calldata _rewards) onlyRecruiter external view {
-        uint totalReward;
-        for(uint i;i < _rewards.length;i++){
-            totalReward += _rewards[i];
-        }
-        require(totalReward <= address(this).balance, "Balance is insufficient");
+    function sendReward(address payable _respondent) onlyRecruiter external {
+        require(respondents[_respondent].exists, "Unvalid Address");
+        require(respondents[_respondent].status == RespondentStatus.Answered, "Not Answered Address");
+
+
+        uint cost = maxReward - minReward;
+        respondents[_respondent].status = RespondentStatus.Rewarded;
+        _respondent.transfer(cost * 1 ether);
+        
     }
     
-    function expire() onlyRecruiter external payable{
-        require(status==RequestStatus.Created);
+    function expire() onlyRecruiter external{
+        // require(status==RequestStatus.Created);
         selfdestruct(msg.sender);
     }
     
