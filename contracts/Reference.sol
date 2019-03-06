@@ -56,20 +56,20 @@ contract Reference {
         status = RequestStatus.Reseaching;
     }
 
-     function getStatus() external view returns(uint _status, uint _deadline){
-        _status = uint(status);
-        _deadline = deadline;
-        // return(_status, deadline);
-    }
+    //  function getStatus() external view returns(uint _status, uint _deadline){
+    //     _status = uint(status);
+    //     _deadline = deadline;
+    //     // return(_status, deadline);
+    // }
     
-    function getRequestState() external view returns(RequestStatus _status){
-        _status = status;
-    }
+    // function getRequestState() external view returns(RequestStatus _status){
+    //     _status = status;
+    // }
     
-    function getResponseStatus(address _respondent) external view returns(RespondentStatus _status){
-        // require(respondents[_respondent], "unknown respondent.");
-        _status = respondents[_respondent].status;
-    }
+    // function getResponseStatus(address _respondent) external view returns(RespondentStatus _status){
+    //     // require(respondents[_respondent], "unknown respondent.");
+    //     _status = respondents[_respondent].status;
+    // }
     
     modifier onlyRecruiter(){
         require(msg.sender == recruiter);
@@ -80,11 +80,9 @@ contract Reference {
         require(respondents[_respondent].exists, "Unvalid Address");
         require(respondents[_respondent].status == RespondentStatus.Answered, "Not Answered Address");
 
-
         uint cost = maxReward - minReward;
         respondents[_respondent].status = RespondentStatus.Rewarded;
         _respondent.transfer(cost * 1 ether);
-        
     }
     
     function expire() onlyRecruiter external{
@@ -107,11 +105,11 @@ contract Reference {
         msg.sender.transfer(MIN_REWARD * 1 ether);
     }
     
-    function getReward() onlyRespondents external{
-        require(status == RequestStatus.Rewarding, "Unvalid Request");
-        require(respondents[msg.sender].reward > 0, "There is no reward");
+    // function getReward() onlyRespondents external{
+    //     require(status == RequestStatus.Rewarding, "Unvalid Request");
+    //     require(respondents[msg.sender].reward > 0, "There is no reward");
         
-        msg.sender.transfer(reward * 1 ether);
-    }
+    //     msg.sender.transfer(reward * 1 ether);
+    // }
     
 }

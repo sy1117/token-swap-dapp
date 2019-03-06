@@ -21,8 +21,6 @@ import "./App.css";
 
 import drizzleOptions from "./drizzleOptions";
 import MyContainer from "./containers/MyContainer";
-import RequestContainer from "./containers/RequestContainer";
-import MyPage from './containers/RespondentContainer';
 import MenuLink from './components/MenuLinkComponent';
 
 // const Context = createContext(); // Context 를 만듭니다.
@@ -81,8 +79,8 @@ class App extends Component {
                 </Visibility>
 
                 <Route exact path="/" component={MyContainer} />
-                <Route exact path="/request" component={RequestContainer} />
-                <Route exact path="/mypage" component={MyPage} />
+                {/* <Route exact path="/request" component={RequestContainer} /> */}
+                {/* <Route exact path="/mypage" component={MyPage} /> */}
               </Responsive>
             </Router>
         </LoadingContainer>

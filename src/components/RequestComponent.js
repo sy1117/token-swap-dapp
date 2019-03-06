@@ -59,13 +59,13 @@ class Request extends React.Component {
         method : "DELETE"
       }).then(()=>{
         alert("취소되었습니다");
+        window.location.reload();
       })
     })
     .on('error', (err, result)=>{
       console.log(err.message, result);
       alert("error",result);
     }); // If there's an out of gas error the second parameter is the receipt.
-
   }
 
   getUser(){
@@ -172,8 +172,9 @@ class Request extends React.Component {
       <div>
         <Container style={{ padding: '3em 0em' }}>
         <Header as='h2' dividing>
-          {this.state.currentContract.name}(소속:{this.state.currentContract.company})
+          {this.state.currentContract.name}
         </Header>
+        <Header as='h4'>소속:{this.state.currentContract.company}</Header>
         <Header as='h3'>
           Comments
         </Header>

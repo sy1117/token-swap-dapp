@@ -55,7 +55,7 @@ class Respondent extends React.Component {
   }
 
   handleClose(){
-    this.setState({ modalOpen: true })
+    this.setState({ modalOpen: false })
   }
 
   createContract(e, data) {
@@ -98,6 +98,8 @@ class Respondent extends React.Component {
           maxReward : that.state.maxReward,
         })
       }).then(()=>{
+        window.location.reload();
+
         that.setState({ modalOpen: false })
         fetch(`/api/user/contract/${account}`,{
           method :'POST',
@@ -129,7 +131,7 @@ class Respondent extends React.Component {
             })
           })
           .then(function(data){
-          });
+          })
         })
       })
 
@@ -177,13 +179,12 @@ class Respondent extends React.Component {
       </Form.Group>
     ));
     return (
-              <Modal trigger={<Button color='red' onClick={this.handleOpen} style={{marginLeft:'1em', padding:'0.5em'}}>New</Button>} 
-              open={this.state.modalOpen}
-                  closeIcon>
-            <Modal.Header>채용자에 대한 레퍼런스 요청하기</Modal.Header>
-            <Modal.Content >
-            <Segment vertical>
-
+    <Modal 
+      trigger={<Button color='olive' onClick={this.handleOpen} floated='right'>Create</Button>} 
+      open={this.state.modalOpen}>
+      <Modal.Header>채용자에 대한 레퍼런스 요청하기</Modal.Header>
+      <Modal.Content>
+      <Segment vertical>
       <Container>
           <Form warning onSubmit={this.createContract}>
             <Header>
@@ -238,7 +239,7 @@ class Respondent extends React.Component {
                     onChange={this.handleChange}
                     min={this.state.minReward}
                     max="100"
-                    label={{ basic: true, content: 'gwei' }} 
+                    label={{ basic: true, content: 'ether' }} 
                     name="maxReward" 
                     labelPosition='right' 
                     placeholder='Maximum Reward (per Person)' /><br/>
@@ -249,13 +250,13 @@ class Respondent extends React.Component {
                 결제 비용 : {this.state.cost} ether
               </Header>
             </Form.Group>
-            <Button type='submit'>Submit</Button>
+            <Button type='submit' floated='right' color='pink'>Request</Button>
+            <Button onClick={this.handleClose}>Close</Button>
           </Form> 
       </Container>
       </Segment>
-
-            </Modal.Content>
-          </Modal>
+        </Modal.Content>
+      </Modal>
     )
   }
 }
