@@ -53,5 +53,12 @@ router.post('/contract/:address', (req, res) => {
     });
 });
 
-
+router.put('/:address', (req, res) => {
+    User.findOneAndUpdate({address: req.params.address}, req.body,(err, user) => {
+        if (err) throw err;
+        if(user){
+            return res.status(200).json(user)
+        }
+    });
+});
 export default router;

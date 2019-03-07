@@ -11,13 +11,12 @@ class UserList extends React.Component{
 
   render(){
     let { onClick , data } = this.props;
-
     let userSample = [
-      {name :'Tom', description:'Top Contributor', image:'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'},
-      {name :'Tom', description:'Top Contributor', image:'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'},
-      {name :'Tom', description:'Top Contributor', image:'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'}
-    ];
-  
+            {name :'Tom', description:'Top Contributor', image:'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'},
+            {name :'Tom', description:'Top Contributor', image:'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'},
+            {name :'Tom', description:'Top Contributor', image:'https://react.semantic-ui.com/images/avatar/small/jenny.jpg'}
+          ];
+
     data = data ? data:userSample;
     let listItems =  data.map(val=>(
       <List.Item 

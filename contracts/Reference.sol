@@ -42,7 +42,7 @@ contract Reference {
     ) payable public {
         require(_minReward >= MIN_REWARD, "minreward");
         require(_maxReward <= MAX_REWARD, "maxreward");
-        require(_respondentAddress.length * _minReward <= msg.value, "you should pay {1 * Num of Respondents} ether");
+        require((_respondentAddress.length * _minReward) <= (msg.value/(1 ether)), "you should pay {1 * Num of Respondents} ether");
         
         recruiter = msg.sender;
         minReward = _minReward;
@@ -62,15 +62,19 @@ contract Reference {
     //     // return(_status, deadline);
     // }
     
-    // function getRequestState() external view returns(RequestStatus _status){
-    //     _status = status;
-    // }
+    /**
+     * 진행 상태
+     */
+    function getRequestState() external view returns(RequestStatus _status){
+        _status = status;
+    }
     
     // function getResponseStatus(address _respondent) external view returns(RespondentStatus _status){
     //     // require(respondents[_respondent], "unknown respondent.");
     //     _status = respondents[_respondent].status;
     // }
     
+
     modifier onlyRecruiter(){
         require(msg.sender == recruiter);
         _;
@@ -99,7 +103,7 @@ contract Reference {
     
     function answer() onlyRespondents external{
         require(status == RequestStatus.Reseaching, "Request is not valid"); 
-        require(respondents[msg.sender].status == RespondentStatus.Wait, "You already got reward");
+        require(respondents[msg.sender].status == RespondentStatus.Wait, "You already answered.");
         
         respondents[msg.sender].status = RespondentStatus.Answered;
         msg.sender.transfer(MIN_REWARD * 1 ether);

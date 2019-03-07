@@ -54,6 +54,7 @@ class Respondent extends React.Component {
   }
 
   answer () {
+    const that = this;
     let web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
     let Reference = new web3.eth.Contract(ReferenceContract.abi, this.state.currentContract.address);
     Reference.options.data = ReferenceContract.bytecode;
@@ -77,14 +78,25 @@ class Respondent extends React.Component {
         body:JSON.stringify({
           comments: this.state.currentContract.comments
         })
-      });
-      alert("평가 작성이 완료되었습니다.");
+      }).then(()=>{
+        fetch(`/api/user/${that.props.accounts[0]}`,{
+          method : "PUT",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body:JSON.stringify({
+            contracts: that.state.user.contracts.filter(val=>val!=this.state.currentContract.address)
+          })
+        });
+        alert("평가 작성이 완료되었습니다.");
+        window.location.reload();
+      })
+      
     })
     .on('error', (err, result)=>{
-      console.log(err.message, result);
       alert("error",result);
     }); // If there's an out of gas error the second parameter is the receipt.
-
   }
 
   getUser () {
@@ -96,6 +108,9 @@ class Respondent extends React.Component {
         return response.json()
       })
       .then(function (data) {
+        that.setState({
+          user: data
+        });
         fetch(`api/contract/search`, {
           method: 'POST',
           headers: {
@@ -134,6 +149,9 @@ class Respondent extends React.Component {
           <UserList data={this.state.data} onClick={this.showContract} />
         </Container>
         <Divider/>
+
+        {this.state.currentContract?
+        ( 
         <Container style={{ padding: '3em 0em' }}>
           <Header as='h1'>
             {this.state.currentContract.name} 에 대한 평가를 작성해주세요
@@ -157,7 +175,16 @@ class Respondent extends React.Component {
               Submit
             </Button>
           </Form>
-        </Container>
+        </Container>)
+        :(
+          <Container textAlign='center'>
+            <Header as='h2' disabled>
+              진행 중인 항목이 없습니다.
+            </Header>
+          </Container>
+        )
+        }
+       
       </Segment>
     )
   }

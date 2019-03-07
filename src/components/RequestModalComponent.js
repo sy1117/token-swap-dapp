@@ -118,6 +118,8 @@ class Respondent extends React.Component {
         .then(function(data){
         });
 
+        console.log(that.state.respondentList);
+
         that.state.respondentList.map(val=>{
           fetch(`/api/user/contract/${val}`,{
             method :'POST',
@@ -162,7 +164,8 @@ class Respondent extends React.Component {
     this.state.accounts[target.name].checked = !target.checked
 
     this.setState({
-      cost : this.state.maxReward * respondentList.length
+      cost : this.state.maxReward * respondentList.length,
+      respondentList : respondentList
     })
   }
   
