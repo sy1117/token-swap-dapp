@@ -15,20 +15,14 @@ class EventList extends React.Component{
     const APContract = new web3.eth.Contract(AppleToken.abi, '0x3Cb468852D8943533b1BB6AB6Eee516aB9D757a7');
     APContract.options.data = AppleToken.bytecode;
 
+    this.getPastEvents(APContract);
+
     APContract.events.Transfer({
     }, (error, event) => { console.log(event); })
     .on('data', (event) => {
-      console.log('data')
-      let {returnValues, transactionHash} = event;
-      let { to, from, value } = returnValues
       this.setState({
         logs :[
-          {
-            to : to,
-            from : from,
-            value : value,
-            transactionHash : transactionHash
-          },
+          event,
           ... that.state.logs
         ] 
       })
@@ -38,18 +32,35 @@ class EventList extends React.Component{
         // remove event from local database
     })
     .on('error', console.error);
-    
-
   }
+
+  getPastEvents(APContract){
+    const that = this;
+
+    APContract.getPastEvents('Transfer',{
+        fromBlock: 0,
+        toBlock: 'latest'
+    }, (error, events) => { console.log(events); })
+    .then((events) => {
+      that.setState({
+        logs: events
+      })
+    });
+  }
+
+
   render(props){
     let logs = this.state.logs.map((item,idx)=>(
-      <li key={idx}>from:{item.from}, to:{item.to}, value:{item.value}</li>
+      <li key={idx}>from:{item.returnValues.from}, to:{item.returnValues.to}, value:{item.returnValues.value}</li>
     ))
     return (
       <div>
         {logs}
       </div>
     )
+  }
+
+  componentDidMount(){
   }
 
 }
