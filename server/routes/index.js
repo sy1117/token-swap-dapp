@@ -1,13 +1,8 @@
 import express from 'express';
 import user from './user';
-import contract from './contract';
-
+import transfer from './transfer';
 
 const router = express.Router();
-// router.use('/account', account);
-// router.use('/memo', memo);
-router.use('/user', user);
-router.use('/contract', contract);
-
+router.use('/transfer', transfer);
 
 export default router;
