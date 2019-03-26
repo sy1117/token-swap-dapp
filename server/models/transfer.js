@@ -9,4 +9,4 @@ const Transfer = new Schema({
     value : Number
 });
 
-export default mongoose.model('transfer', Contract);
+export default mongoose.model('transfer', Transfer);
