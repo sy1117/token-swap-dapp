@@ -1,6 +1,6 @@
 import AppleToken from "./contracts/AppleToken.json";
 import BananaToken from "./contracts/BananaToken.json";
-import HashedTimelock from './contracts/HashedTimelock.json';
+import HashedTimelockERC20 from './contracts/HashedTimelockERC20.json';
 
 const options = {
   web3: {
@@ -10,15 +10,11 @@ const options = {
     //   url: "ws://127.0.0.1:9545",
     // },
   },
-  contracts: [AppleToken, BananaToken, HashedTimelock],
+  contracts: [AppleToken, BananaToken, HashedTimelockERC20],
   events: {
     // SimpleStorage: ["StorageSet"],
-    AppleToken: [
-      {
-        eventName: "Transfer"
-      }
-    ],
-    HashedTimelock : ["LogHTLCNew","LogHTLCWithdraw","LogHTLCRefund"]
+    AppleToken: [ "Transfer"],
+    HashedTimelockERC20 : ["LogHTLCERC20New","LogHTLCERC20Withdraw","LogHTLCERC20Refund"]
   },
   polls: {
     accounts: 1500,

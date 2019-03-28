@@ -1,49 +1,57 @@
 pragma solidity ^0.5.0;
 
+import './token/ERC20.sol';
 /**
- * @title Hashed Timelock Contracts (HTLCs) on Ethereum ETH.
- *
- * This contract provides a way to create and keep HTLCs for ETH.
- *
- * See HashedTimelockERC20.sol for a contract that provides the same functions 
- * for ERC20 tokens.
- *
- * Protocol:
- *
- *  1) newContract(receiver, hashlock, timelock) - a sender calls this to create
- *      a new HTLC and gets back a 32 byte contract id
- *  2) withdraw(contractId, preimage) - once the receiver knows the preimage of
- *      the hashlock hash they can claim the ETH with this function
- *  3) refund() - after timelock has expired and if the receiver did not 
- *      withdraw funds the sender / creater of the HTLC can get their ETH 
- *      back with this function.
+* @title Hashed Timelock Contracts (HTLCs) on Ethereum ERC20 tokens.
+*
+* This contract provides a way to create and keep HTLCs for ERC20 tokens.
+*
+* See HashedTimelock.sol for a contract that provides the same functions 
+* for the native ETH token.
+*
+* Protocol:
+*
+*  1) newContract(receiver, hashlock, timelock, tokenContract, amount) - a 
+*      sender calls this to create a new HTLC on a given token (tokenContract) 
+*       for a given amount. A 32 byte contract id is returned
+*  2) withdraw(contractId, preimage) - once the receiver knows the preimage of
+*      the hashlock hash they can claim the tokens with this function
+*  3) refund() - after timelock has expired and if the receiver did not 
+*      withdraw the tokens the sender / creater of the HTLC can get their tokens 
+*      back with this function.
  */
-contract HashedTimelock {
+contract HashedTimelockERC20 {
 
-    event LogHTLCNew(
+    event LogHTLCERC20New(
         bytes32 indexed contractId,
         address indexed sender,
         address indexed receiver,
+        address tokenContract,
         uint amount,
         bytes32 hashlock,
         uint timelock
     );
-    event LogHTLCWithdraw(bytes32 indexed contractId);
-    event LogHTLCRefund(bytes32 indexed contractId);
+    event LogHTLCERC20Withdraw(bytes32 indexed contractId);
+    event LogHTLCERC20Refund(bytes32 indexed contractId);
 
     struct LockContract {
-        address payable sender;
-        address payable receiver;
+        address sender;
+        address receiver;
+        address tokenContract;
         uint amount;
-        bytes32 hashlock; // sha-2 sha256 hash
+        bytes32 hashlock;
         uint timelock; // UNIX timestamp seconds - locked UNTIL this time
         bool withdrawn;
         bool refunded;
         bytes32 preimage;
     }
 
-    modifier fundsSent() {
-        require(msg.value > 0, "msg.value must be > 0");
+    modifier tokensTransferable(address _token, address _sender, uint _amount) {
+        require(_amount > 0, "token amount must be > 0");
+        require(
+            ERC20(_token).allowance(_sender, address(this)) >= _amount,
+            "token allowance must be >= amount"
+        );
         _;
     }
     modifier futureTimelock(uint _time) {
@@ -81,20 +89,30 @@ contract HashedTimelock {
     mapping (bytes32 => LockContract) contracts;
 
     /**
-     * @dev Sender sets up a new hash time lock contract depositing the ETH and 
-     * providing the reciever lock terms.
+     * @dev Sender / Payer sets up a new hash time lock contract depositing the
+     * funds and providing the reciever and terms.
      *
-     * @param _receiver Receiver of the ETH.
+     * NOTE: _receiver must first call approve() on the token contract. 
+     *       See allowance check in tokensTransferable modifier.
+
+     * @param _receiver Receiver of the tokens.
      * @param _hashlock A sha-2 sha256 hash hashlock.
      * @param _timelock UNIX epoch seconds time that the lock expires at. 
      *                  Refunds can be made after this time.
+     * @param _tokenContract ERC20 Token contract address.
+     * @param _amount Amount of the token to lock up.
      * @return contractId Id of the new HTLC. This is needed for subsequent 
      *                    calls.
      */
-    function newContract(address payable _receiver, bytes32 _hashlock, uint _timelock)
+    function newContract(
+        address _receiver,
+        bytes32 _hashlock,
+        uint _timelock,
+        address _tokenContract,
+        uint _amount
+    )
         external
-        payable
-        fundsSent
+        tokensTransferable(_tokenContract, msg.sender, _amount)
         futureTimelock(_timelock)
         returns (bytes32 contractId)
     {
@@ -102,22 +120,28 @@ contract HashedTimelock {
             abi.encodePacked(
                 msg.sender,
                 _receiver,
-                msg.value,
+                _tokenContract,
+                _amount,
                 _hashlock,
                 _timelock
             )
         );
 
         // Reject if a contract already exists with the same parameters. The
-        // sender must change one of these parameters to create a new distinct 
-        // contract.
+        // sender must change one of these parameters (ideally providing a
+        // different _hashlock).
         if (haveContract(contractId))
+            revert();
+
+        // This contract becomes the temporary owner of the tokens
+        if (!ERC20(_tokenContract).transferFrom(msg.sender, address(this), _amount))
             revert();
 
         contracts[contractId] = LockContract(
             msg.sender,
             _receiver,
-            msg.value,
+            _tokenContract,
+            _amount,
             _hashlock,
             _timelock,
             false,
@@ -125,23 +149,24 @@ contract HashedTimelock {
             0x0
         );
 
-        emit LogHTLCNew(
+        emit LogHTLCERC20New(
             contractId,
             msg.sender,
             _receiver,
-            msg.value,
+            _tokenContract,
+            _amount,
             _hashlock,
             _timelock
         );
     }
 
     /**
-     * @dev Called by the receiver once they know the preimage of the hashlock.
-     * This will transfer the locked funds to their address.
-     *
-     * @param _contractId Id of the HTLC.
-     * @param _preimage sha256(_preimage) should equal the contract hashlock.
-     * @return bool true on success
+    * @dev Called by the receiver once they know the preimage of the hashlock.
+    * This will transfer ownership of the locked tokens to their address.
+    *
+    * @param _contractId Id of the HTLC.
+    * @param _preimage sha256(_preimage) should equal the contract hashlock.
+    * @return bool true on success
      */
     function withdraw(bytes32 _contractId, bytes32 _preimage)
         external
@@ -153,14 +178,14 @@ contract HashedTimelock {
         LockContract storage c = contracts[_contractId];
         c.preimage = _preimage;
         c.withdrawn = true;
-        c.receiver.transfer(c.amount);
-        emit LogHTLCWithdraw(_contractId);
+        ERC20(c.tokenContract).transfer(c.receiver, c.amount);
+        emit LogHTLCERC20Withdraw(_contractId);
         return true;
     }
 
     /**
      * @dev Called by the sender if there was no withdraw AND the time lock has
-     * expired. This will refund the contract amount.
+     * expired. This will restore ownership of the tokens to the sender.
      *
      * @param _contractId Id of HTLC to refund from.
      * @return bool true on success
@@ -173,8 +198,8 @@ contract HashedTimelock {
     {
         LockContract storage c = contracts[_contractId];
         c.refunded = true;
-        c.sender.transfer(c.amount);
-        emit LogHTLCRefund(_contractId);
+        ERC20(c.tokenContract).transfer(c.sender, c.amount);
+        emit LogHTLCERC20Refund(_contractId);
         return true;
     }
 
@@ -189,6 +214,7 @@ contract HashedTimelock {
         returns (
             address sender,
             address receiver,
+            address tokenContract,
             uint amount,
             bytes32 hashlock,
             uint timelock,
@@ -198,10 +224,19 @@ contract HashedTimelock {
         )
     {
         if (haveContract(_contractId) == false)
-            return (address(0), address(0), 0, 0, 0, false, false, 0);
+            return (address(0), address(0), address(0), 0, 0, 0, false, false, 0);
         LockContract storage c = contracts[_contractId];
-        return (c.sender, c.receiver, c.amount, c.hashlock, c.timelock,
-                c.withdrawn, c.refunded, c.preimage);
+        return (
+            c.sender,
+            c.receiver,
+            c.tokenContract,
+            c.amount,
+            c.hashlock,
+            c.timelock,
+            c.withdrawn,
+            c.refunded,
+            c.preimage
+        );
     }
 
     /**

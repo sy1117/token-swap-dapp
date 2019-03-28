@@ -7,13 +7,36 @@ import AppleToken from '../contracts/AppleToken'
 
 class EventList extends React.Component{
   constructor(props, context) {
-    super(props)
+    super(props);
     this.state = {
       logs :[]
     };
+  }
+
+  getPastEvents(APContract){
+    const that = this;
+
+    APContract.getPastEvents('Transfer',{
+        fromBlock: 0,
+        toBlock: 'latest'
+    })
+    .then((events) => {
+      that.setState({
+        logs: events
+      })
+    });
+  }
+
+  componentDidMount(){
+
+  }
+
+
+  render(props){
+
     const that = this;
     const web3 = new Web3(Web3.givenProvider);
-    const APContract = new web3.eth.Contract(AppleToken.abi, '0x3Cb468852D8943533b1BB6AB6Eee516aB9D757a7');
+    const APContract = new web3.eth.Contract(AppleToken.abi, this.props.address);
     APContract.options.data = AppleToken.bytecode;
 
     this.getPastEvents(APContract);
@@ -36,24 +59,6 @@ class EventList extends React.Component{
         // remove event from local database
     })
     .on('error', console.error);
-  }
-
-  getPastEvents(APContract){
-    const that = this;
-
-    APContract.getPastEvents('Transfer',{
-        fromBlock: 0,
-        toBlock: 'latest'
-    }, (error, events) => { console.log(events); })
-    .then((events) => {
-      that.setState({
-        logs: events
-      })
-    });
-  }
-
-
-  render(props){
     let logs = this.state.logs.map((item,idx)=>(
       <Table.Row>
         <Table.Cell>{item.returnValues.from}</Table.Cell>
