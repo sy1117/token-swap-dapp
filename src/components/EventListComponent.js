@@ -25,9 +25,18 @@ class EventList extends React.Component{
         logs: events
       })
     });
+
+    // APContract.getPastEvents('Approval',{
+    //   fromBlock: 0,
+    //   toBlock: 'latest'
+    // })
+    // .then((events) => {
+    //   console.log(events)
+    // });
   }
 
   componentDidMount(){
+    console.log(this.props)
 
   }
 
