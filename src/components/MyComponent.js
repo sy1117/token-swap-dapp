@@ -74,7 +74,7 @@ class MyComponent extends React.Component {
         <div className="section">
           <h2>AppleToken</h2>
           <p>
-            <strong>My Balance: {AP_BALANCE? AP_BALANCE.value: ''}</strong>
+            <strong>My Balance: {AP_BALANCE? (parseInt(AP_BALANCE.value)/100).toFixed(2): ''}</strong>
           </p>
           <h3>transaction logs</h3>
           <EventContainer address={drizzle.contracts.AppleToken.address}/>
@@ -82,7 +82,7 @@ class MyComponent extends React.Component {
         <div className="section">
           <h2>BananaToken</h2>
           <p>
-            <strong>My Balance: {BNN_BALANCE? BNN_BALANCE.value: ''}</strong>
+            <strong>My Balance: {BNN_BALANCE? (parseInt(BNN_BALANCE.value)/100).toFixed(2): ''}</strong>
           </p>
           <h3>transaction logs</h3>
           <EventContainer address={drizzle.contracts.BananaToken.address}/>
