@@ -50,6 +50,9 @@ class MyComponent extends React.Component {
     const AP_BALANCE = AppleToken.methods["balanceOf"].cacheCall(drizzleState.accounts[0]);
     const BNN_BALANCE = BananaToken.methods["balanceOf"].cacheCall(drizzleState.accounts[0]);
 
+    // const AP_BALANCE = 0;//AppleToken.methods["balanceOf"].cacheCall(drizzleState.accounts[0]);
+    // const BNN_BALANCE = 0;;// BananaToken.methods["balanceOf"].cacheCall(drizzleState.accounts[0]);
+
     this.setState({ AP_BALANCE, BNN_BALANCE });
   }
 

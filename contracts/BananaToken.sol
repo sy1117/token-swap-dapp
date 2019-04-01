@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
-import './token/ERC20.sol';
-import './token/ERC20Detailed.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol';
 
 /**  
 * @title BearToken is a basic ERC20 Token  
